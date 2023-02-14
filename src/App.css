@@ -40,3 +40,17 @@
 .read-the-docs {
     color: #888;
 }
+
+.choices {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.turnScores {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
+    justify-content: space-around;
+    gap: 20px;
+}
