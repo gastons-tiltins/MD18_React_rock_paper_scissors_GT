@@ -114,7 +114,7 @@ button:focus-visible {
 .mainContainer {
     display: grid;
     /* width: 1000px; */
-    grid-template-columns: 80% 20%;
+    grid-template-columns: 70% auto;
     /* background-color: skyblue; */
     gap: 20px;
 }
@@ -154,4 +154,34 @@ button:focus-visible {
 
 .navBarHeading {
     margin: 0px;
+}
+
+table {
+    /* width: 100%; */
+    border-collapse: collapse;
+}
+
+table,
+td,
+th {
+    border: 1px solid;
+    padding: 3px;
+    text-align: center;
+}
+
+th {
+    background-color: #b7cad0;
+}
+
+tr:nth-child(even) {
+    background-color: #cce2e9;
+}
+
+.globalScore {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* background-color: red; */
+    margin: 5px;
 }

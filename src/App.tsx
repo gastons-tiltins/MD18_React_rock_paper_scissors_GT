@@ -6,6 +6,13 @@ import scissors from './assets/images/scissors.png';
 import {useTranslation, Trans} from 'react-i18next';
 import {GlobalScore} from './components/GlobalScore/GlobalScore';
 import axios from 'axios';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+} from '@tanstack/react-query';
 
 // Localization languages
 const lngs: {} = {
@@ -79,6 +86,31 @@ function App() {
         setMoves(0);
     };
 
+    // Access the client
+    const queryClient = useQueryClient();
+
+    // Send data to API
+    const sendDataToApi = useMutation({
+        mutationFn: (matchData) => {
+            return axios.post(`http://localhost:3004/post`, matchData);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch
+            queryClient.invalidateQueries({queryKey: ['repoData']});
+        },
+    });
+
+    // Wipe database data
+    const deletePost = useMutation({
+        mutationFn: () => {
+            return axios.delete(`http://localhost:3004/delete`);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch
+            queryClient.invalidateQueries({queryKey: ['repoData']});
+        },
+    });
+
     useEffect(() => {
         if (playerScore <= 4 && pcScore <= 4) {
             if (
@@ -106,6 +138,13 @@ function App() {
                     ]);
                     setGameOver(true);
                     setGameNumber(gameNumber + 1);
+                    let pushData: any = {
+                        game_no: String(gameNumber + 1),
+                        player_name: playerName,
+                        score_pc: String(pcScore),
+                        score_player: String(playerScore + 1),
+                    };
+                    sendDataToApi.mutate(pushData);
                 }
             }
 
@@ -132,6 +171,21 @@ function App() {
                     ]);
                     setGameOver(true);
                     setGameNumber(gameNumber + 1);
+
+                    type pushData = {
+                        game_no: string;
+                        player_name: string;
+                        score_pc: string;
+                        score_player: string;
+                    };
+
+                    let pushData: any = {
+                        game_no: String(gameNumber + 1),
+                        player_name: playerName,
+                        score_pc: String(pcScore + 1),
+                        score_player: String(playerScore),
+                    };
+                    sendDataToApi.mutate(pushData);
                 }
             }
 
@@ -188,6 +242,10 @@ function App() {
         setCounter(count + 1);
     };
 
+    const handleResetDatabase = () => {
+        deletePost.mutate();
+    };
+
     return (
         <div className='App'>
             <div className='navBar'>
@@ -208,6 +266,17 @@ function App() {
                             Change name?
                         </button>
                     )}
+                </div>
+                <div>
+                    {gameOver ||
+                        (!nameIsSet && (
+                            <button
+                                className='button button2'
+                                onClick={handleResetDatabase}
+                            >
+                                Reset database
+                            </button>
+                        ))}
                 </div>
                 <div>
                     <label className='formLabel' htmlFor='langChange'>

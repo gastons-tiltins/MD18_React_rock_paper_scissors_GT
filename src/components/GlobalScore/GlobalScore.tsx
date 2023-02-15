@@ -19,16 +19,7 @@ type globalScore = {
 export const GlobalScore: React.FunctionComponent<globalScore> = ({
     globalScore,
 }) => {
-    const fetchPosts = async () => {
-        const res = await axios
-            .get('http://localhost:3004/results')
-            .then((res) => {
-                console.log('123');
-                console.log(res.data);
-            });
-        // return res.data;
-    };
-
+    // Fetch data from API
     function FetchSqlData() {
         const {isLoading, error, data} = useQuery({
             queryKey: ['repoData'],
@@ -46,13 +37,50 @@ export const GlobalScore: React.FunctionComponent<globalScore> = ({
         return (
             <div>
                 {/* <p>{JSON.stringify(data)}</p> */}
-                <p>{data[0].player_name}</p>
-                {/* <p>{data}</p> */}
-                {/* <h1>{data.name}</h1>
-                <p>{data.description}</p>
-                <strong>👀 {data.subscribers_count}</strong>{' '}
-                <strong>✨ {data.stargazers_count}</strong>{' '}
-                <strong>🍴 {data.forks_count}</strong> */}
+                <div className='globalScore'>
+                    {data.length >= 2 && (
+                        <h2 className='globalScore'>Global score</h2>
+                    )}
+                    <table className='resultsTable'>
+                        <tbody>
+                            {data.length > 0 && (
+                                <tr>
+                                    <th>No</th>
+                                    <th>Player</th>
+                                    <th>Result</th>
+                                    <th>Player Score</th>
+                                    <th>PC Score</th>
+                                </tr>
+                            )}
+                            {data.map((score: any, index: any) => (
+                                <tr key={index}>
+                                    {score.game_no !== '' && (
+                                        <>
+                                            <td>{index + 1}</td>
+                                            <td>{score.player_name}</td>
+                                            <td>
+                                                {Number(score.score_player) >
+                                                Number(score.score_pc)
+                                                    ? `WON`
+                                                    : `LOST`}
+                                            </td>
+                                            <td>{score.score_player}</td>
+                                            <td>{score.score_pc}</td>
+                                        </>
+                                        // <h4>
+                                        //     Game {score.game_no}: {score.player_name}{' '}
+                                        //     {Number(score.score_player) >
+                                        //     Number(score.score_pc)
+                                        //         ? `WON`
+                                        //         : `LOST`}{' '}
+                                        //     ({score.score_player} vs {score.score_pc})
+                                        // </h4>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }
