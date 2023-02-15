@@ -3,19 +3,33 @@ import './App.css';
 import rock from './assets/images/rock.png';
 import paper from './assets/images/paper.png';
 import scissors from './assets/images/scissors.png';
-import {setTimeout} from 'timers/promises';
+import {useTranslation, Trans} from 'react-i18next';
+import {GlobalScore} from './components/GlobalScore/GlobalScore';
+import axios from 'axios';
+
+// Localization languages
+const lngs: {} = {
+    en: {nativeName: 'English'},
+    lv: {nativeName: 'Latvian'},
+};
 
 function App() {
+    // Translation
+    const [count, setCounter] = useState(0);
+    const {t, i18n} = useTranslation();
+
     // Player name
-    const [playerName, setPlayerName] = useState('Gastons');
+    const [playerName, setPlayerName] = useState('');
+    const [nameIsSet, setNameIsSet] = useState(false);
 
     // Global data
     const [gameNumber, setGameNumber] = useState(0);
     const [globalScore, setGlobalScore] = useState([
         {
-            name: '',
-            game: '',
-            score: '',
+            player_name: '',
+            game_no: '',
+            score_pc: '',
+            score_player: '',
         },
     ]);
 
@@ -55,7 +69,14 @@ function App() {
     };
 
     const handleReset = () => {
-        window.location.reload();
+        setPlayerChoice('');
+        setPcChoice('');
+        setPlayerScore(0);
+        setPcScore(0);
+        setTurnResult('');
+        setFinalScore('');
+        setGameOver(false);
+        setMoves(0);
     };
 
     useEffect(() => {
@@ -65,19 +86,22 @@ function App() {
                 (playerChoice == 'rock' && pcChoice == 'scissors') ||
                 (playerChoice == 'scissors' && pcChoice == 'paper')
             ) {
-                // playerScore.current += 1
                 const updatedPlayerScore = playerScore + 1;
                 setPlayerScore(updatedPlayerScore);
                 setTurnResult(
                     `${playerName} takes +1 point with ${playerChoice} over ${pcChoice}!`,
                 );
                 if (updatedPlayerScore === 5) {
+                    setFinalScore(
+                        `Player wins (${playerScore + 1} vs ${pcScore})`,
+                    );
                     setGlobalScore([
                         ...globalScore,
                         {
-                            game: `${gameNumber + 1}`,
-                            name: playerName,
-                            score: ` WON (${playerScore + 1} to ${pcScore})`,
+                            game_no: String(gameNumber + 1),
+                            player_name: playerName,
+                            score_pc: String(pcScore),
+                            score_player: String(playerScore + 1),
                         },
                     ]);
                     setGameOver(true);
@@ -90,7 +114,6 @@ function App() {
                 (pcChoice == 'rock' && playerChoice == 'scissors') ||
                 (pcChoice == 'scissors' && playerChoice == 'paper')
             ) {
-                // pcScore.current += 1
                 const updatePcScore = pcScore + 1;
                 setPcScore(updatePcScore);
                 setTurnResult(
@@ -101,9 +124,10 @@ function App() {
                     setGlobalScore([
                         ...globalScore,
                         {
-                            game: `${gameNumber + 1}`,
-                            name: playerName,
-                            score: ` LOST (${playerScore} to ${pcScore + 1})`,
+                            game_no: String(gameNumber + 1),
+                            player_name: playerName,
+                            score_pc: String(pcScore + 1),
+                            score_player: String(playerScore),
                         },
                     ]);
                     setGameOver(true);
@@ -121,101 +145,205 @@ function App() {
         }
     }, [moves, pcChoice, playerChoice]);
 
-    return (
-        <div className='App'>
-            <h1 className='heading'>Rock Paper Scissors (best of 5)</h1>
-            {/* {moves > 0 && <h1>Move No: {moves}</h1>} */}
-            {/* {gameOver != true && ( */}
+    const handleNameForm = (e: React.ChangeEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setPlayerName(e.target.player.value);
+        setNameIsSet(true);
+    };
+
+    const handleChangeName = (e: React.SyntheticEvent) => {
+        // setNameIsSet(false);
+        setNameIsSet((prevCheck) => !prevCheck);
+    };
+
+    const Name = () => {
+        return (
             <>
-                <div className='turnResult'>
-                    {turnResult && (
-                        <h1>
-                            Turn {moves} result: {turnResult}
-                        </h1>
-                    )}
-                </div>
-                <div className='turnScores'>
-                    <h1>Player: {playerScore}</h1>
-                    <h1>PC: {pcScore}</h1>
-                </div>
-                <div className='finalResult'>
-                    {finalScore && <h1>Game results: {finalScore}</h1>}
-                </div>
-                <div className='choices'>
-                    <div className='playerChoice'>
-                        {playerChoice === 'rock' && (
-                            <img src={rock} alt='Player rock.' />
-                        )}
-                        {playerChoice === 'paper' && (
-                            <img src={paper} alt='Player paper.' />
-                        )}
-                        {playerChoice === 'scissors' && (
-                            <img src={scissors} alt='Player scissors.' />
-                        )}
-                    </div>
-                    <div className='pcChoice'>
-                        {pcChoice === 'rock' && (
-                            <img src={rock} alt='Player rock.' />
-                        )}
-                        {pcChoice === 'paper' && (
-                            <img src={paper} alt='Player paper.' />
-                        )}
-                        {pcChoice === 'scissors' && (
-                            <img src={scissors} alt='Player scissors.' />
-                        )}
-                    </div>
-                </div>
-                {!gameOver && (
-                    <div className='buttonContainer'>
-                        <h1>Make your choice:</h1>
-                        <button
-                            className='button button1'
-                            onClick={playerRock}
-                            disabled={gameOver}
-                        >
-                            Rock
-                        </button>
-                        <button
-                            className='button button1'
-                            onClick={playerPaper}
-                            disabled={gameOver}
-                        >
-                            Paper
-                        </button>
-                        <button
-                            className='button button1'
-                            onClick={playerScissors}
-                            disabled={gameOver}
-                        >
-                            Scissors
-                        </button>
+                {!nameIsSet && (
+                    <div className=''>
+                        <br />
+                        <form onSubmit={handleNameForm}>
+                            <label className='formLabel' htmlFor='name'>
+                                Set your name:{' '}
+                            </label>
+                            <input
+                                className='formInput'
+                                type='text'
+                                id='name'
+                                name='player'
+                                required
+                            />
+                            <button className='button button1'>
+                                Save name
+                            </button>
+                        </form>
                     </div>
                 )}
             </>
-            {/* )} */}
-            <div className='buttonContainer'>
-                {gameOver && (
-                    <>
-                        <h1>Play again?</h1>
+        );
+    };
+
+    const langChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        i18n.changeLanguage(e.target.value);
+        setCounter(count + 1);
+    };
+
+    return (
+        <div className='App'>
+            <div className='navBar'>
+                <div>
+                    <h1>
+                        <div>
+                            <h1>{t('gameTitle')}</h1>
+                        </div>
+                    </h1>
+                </div>
+                <div>{nameIsSet && <h2>Your name is: {playerName}</h2>}</div>
+                <div>
+                    {gameOver && nameIsSet && (
                         <button
-                            className='button button1'
-                            onClick={handleReset}
+                            className='button button2'
+                            onClick={handleChangeName}
                         >
-                            Play again?
+                            Change name?
                         </button>
-                    </>
-                )}
-            </div>
-            <h3>Global score</h3>
-            {globalScore.map((score, index) => (
-                <div key={index}>
-                    {score.game !== '' && (
-                        <p>
-                            Game {score.game}: {score.name} {score.score}
-                        </p>
                     )}
                 </div>
-            ))}
+                <div>
+                    <label className='formLabel' htmlFor='langChange'>
+                        Select language:{' '}
+                    </label>
+                    <select
+                        className='formInput'
+                        onChange={langChange}
+                        name='cars'
+                        id='langChange'
+                    >
+                        <option value='en'>English</option>
+                        <option value='lv'>Latvian</option>
+                    </select>
+                </div>
+
+                {/* <h1>Game No: {gameNumber}</h1> */}
+            </div>
+            <div className='mainContainer'>
+                <div>
+                    <Name />
+                    {/* <button className='button button1'>Change name</button> */}
+
+                    {nameIsSet && (
+                        <>
+                            {/* {moves > 0 && <h1>Move No: {moves}</h1>} */}
+                            {/* {gameOver != true && ( */}
+
+                            <>
+                                <div className='turnResult'>
+                                    {turnResult && (
+                                        <h1 className='turnStyling'>
+                                            Turn {moves} result: {turnResult}
+                                        </h1>
+                                    )}
+                                </div>
+                                <div className='turnScores'>
+                                    <h2>
+                                        {playerName}: {playerScore}
+                                    </h2>
+                                    <h2>PC: {pcScore}</h2>
+                                </div>
+                                <div className='finalResult'>
+                                    {finalScore && (
+                                        <h1>Game over! {finalScore}</h1>
+                                    )}
+                                </div>
+                                <div className='choices'>
+                                    <div className='playerChoice'>
+                                        {playerChoice === 'rock' && (
+                                            <img
+                                                src={rock}
+                                                alt='Player rock.'
+                                            />
+                                        )}
+                                        {playerChoice === 'paper' && (
+                                            <img
+                                                src={paper}
+                                                alt='Player paper.'
+                                            />
+                                        )}
+                                        {playerChoice === 'scissors' && (
+                                            <img
+                                                src={scissors}
+                                                alt='Player scissors.'
+                                            />
+                                        )}
+                                    </div>
+                                    <div className='pcChoice'>
+                                        {pcChoice === 'rock' && (
+                                            <img
+                                                src={rock}
+                                                alt='Player rock.'
+                                            />
+                                        )}
+                                        {pcChoice === 'paper' && (
+                                            <img
+                                                src={paper}
+                                                alt='Player paper.'
+                                            />
+                                        )}
+                                        {pcChoice === 'scissors' && (
+                                            <img
+                                                src={scissors}
+                                                alt='Player scissors.'
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                                {!gameOver && (
+                                    <div className='buttonContainer'>
+                                        <h2>Make your choice:</h2>
+                                        <button
+                                            className='button button1'
+                                            onClick={playerRock}
+                                            disabled={gameOver}
+                                        >
+                                            Rock
+                                        </button>
+                                        <button
+                                            className='button button1'
+                                            onClick={playerPaper}
+                                            disabled={gameOver}
+                                        >
+                                            Paper
+                                        </button>
+                                        <button
+                                            className='button button1'
+                                            onClick={playerScissors}
+                                            disabled={gameOver}
+                                        >
+                                            Scissors
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        </>
+                    )}
+
+                    {/* )} */}
+                    <div className='buttonContainer'>
+                        {gameOver && nameIsSet && (
+                            <>
+                                <h1>Play again?</h1>
+                                <button
+                                    className='button button1'
+                                    onClick={handleReset}
+                                >
+                                    Play
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+                <GlobalScore globalScore={globalScore} />
+            </div>
         </div>
     );
 }
