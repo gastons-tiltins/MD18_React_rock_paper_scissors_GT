@@ -12,14 +12,17 @@ const lngs: {} = {
     ar: {nativeName: 'العربية'},
 };
 
-export const Home = () => {
+export const Home = ({langCh, setLangCh}: any) => {
+    // Testing translations
+
     // Translation
     const [count, setCounter] = useState(0);
     const {t, i18n} = useTranslation();
 
     const langChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        i18n.changeLanguage(e.target.value);
+        i18n.changeLanguage(e.currentTarget.value);
         setCounter(count + 1);
+        setLangCh(e.currentTarget.value);
     };
 
     return (
@@ -52,6 +55,7 @@ export const Home = () => {
                         {t('selectLanguage')}{' '}
                     </label>
                     <select
+                        value={langCh}
                         className='selectForm'
                         onChange={langChange}
                         name='cars'

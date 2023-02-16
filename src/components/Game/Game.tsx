@@ -18,7 +18,7 @@ const lngs: {} = {
     ar: {nativeName: 'العربية'},
 };
 
-export const Game = () => {
+export const Game = ({langCh, setLangCh}: any) => {
     // Translation
     const [count, setCounter] = useState(0);
     const {t, i18n} = useTranslation();
@@ -261,8 +261,9 @@ export const Game = () => {
     };
 
     const langChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        i18n.changeLanguage(e.target.value);
+        i18n.changeLanguage(e.currentTarget.value);
         setCounter(count + 1);
+        setLangCh(e.currentTarget.value);
     };
 
     const handleResetDatabase = () => {
@@ -283,6 +284,119 @@ export const Game = () => {
                 <button className='button button2' onClick={handleChangeName}>
                     {t('changeYourName')}
                 </button>
+            </>
+        );
+    };
+
+    const TurnResult = () => {
+        return (
+            <>
+                <div className='turnResult'>
+                    {turnResult && (
+                        <h1 className='turnStyling'>
+                            {t('turn')} {moves} {t('result')}{' '}
+                            {turnResult.draw === 'draw' && (
+                                <span>{t('draw')}</span>
+                            )}
+                            {turnResult.winner === playerName && (
+                                <span>
+                                    {playerName} <span>+1</span> {t('with')}{' '}
+                                    {turnResult.player} {t('over')}{' '}
+                                    {turnResult.pc}
+                                </span>
+                            )}
+                            {turnResult.winner === 'PC' && (
+                                <span>
+                                    {' '}
+                                    {t('pcPlusOne')}
+                                    <span>+1</span> {turnResult.pc} {t('over')}{' '}
+                                    {turnResult.player}
+                                </span>
+                            )}
+                        </h1>
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    const PlayerChoices = () => {
+        return (
+            <>
+                <div className='playerChoice'>
+                    {playerChoice === 'rock' && (
+                        <img draggable='false' src={rock} alt='Player rock.' />
+                    )}
+                    {playerChoice === 'paper' && (
+                        <img
+                            draggable='false'
+                            src={paper}
+                            alt='Player paper.'
+                        />
+                    )}
+                    {playerChoice === 'scissors' && (
+                        <img
+                            draggable='false'
+                            src={scissors}
+                            alt='Player scissors.'
+                        />
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    const PcChoices = () => {
+        return (
+            <>
+                <div className='pcChoice'>
+                    {pcChoice === 'rock' && (
+                        <img draggable='false' src={rock} alt='PC rock.' />
+                    )}
+                    {pcChoice === 'paper' && (
+                        <img draggable='false' src={paper} alt='PC paper.' />
+                    )}
+                    {pcChoice === 'scissors' && (
+                        <img
+                            draggable='false'
+                            src={scissors}
+                            alt='PC scissors.'
+                        />
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    const GameOver = () => {
+        return (
+            <>
+                {!gameOver && (
+                    <div className='buttonContainer'>
+                        <h2>{t('choice')}</h2>
+                        <button
+                            className='button button1'
+                            onClick={playerRock}
+                            disabled={gameOver}
+                        >
+                            {t('rock')}
+                        </button>
+                        <button
+                            className='button button1'
+                            onClick={playerScissors}
+                            disabled={gameOver}
+                        >
+                            {t('scissors')}
+                        </button>
+                        <button
+                            className='button button1'
+                            onClick={playerPaper}
+                            disabled={gameOver}
+                        >
+                            {t('paper')}
+                        </button>
+                    </div>
+                )}
             </>
         );
     };
@@ -323,6 +437,7 @@ export const Game = () => {
                         {t('selectLanguage')}{' '}
                     </label>
                     <select
+                        value={langCh}
                         className='selectForm'
                         onChange={langChange}
                         name='cars'
@@ -347,34 +462,7 @@ export const Game = () => {
                             {/* {gameOver != true && ( */}
 
                             <>
-                                <div className='turnResult'>
-                                    {turnResult && (
-                                        <h1 className='turnStyling'>
-                                            {t('turn')} {moves} {t('result')}{' '}
-                                            {turnResult.draw === 'draw' && (
-                                                <span>{t('draw')}</span>
-                                            )}
-                                            {turnResult.winner ===
-                                                playerName && (
-                                                <span>
-                                                    {playerName} <span>+1</span>{' '}
-                                                    {t('with')}{' '}
-                                                    {turnResult.player}{' '}
-                                                    {t('over')} {turnResult.pc}
-                                                </span>
-                                            )}
-                                            {turnResult.winner === 'PC' && (
-                                                <span>
-                                                    {' '}
-                                                    {t('pcPlusOne')}
-                                                    <span>+1</span>{' '}
-                                                    {turnResult.pc} {t('over')}{' '}
-                                                    {turnResult.player}
-                                                </span>
-                                            )}
-                                        </h1>
-                                    )}
-                                </div>
+                                <TurnResult />
                                 <div className='turnScores'>
                                     <h2>
                                         {playerName}: {playerScore}
@@ -393,84 +481,13 @@ export const Game = () => {
                                     )}
                                 </div>
                                 <div className='choices'>
-                                    <div className='playerChoice'>
-                                        {playerChoice === 'rock' && (
-                                            <img
-                                                draggable='false'
-                                                src={rock}
-                                                alt='Player rock.'
-                                            />
-                                        )}
-                                        {playerChoice === 'paper' && (
-                                            <img
-                                                draggable='false'
-                                                src={paper}
-                                                alt='Player paper.'
-                                            />
-                                        )}
-                                        {playerChoice === 'scissors' && (
-                                            <img
-                                                draggable='false'
-                                                src={scissors}
-                                                alt='Player scissors.'
-                                            />
-                                        )}
-                                    </div>
-                                    <div className='pcChoice'>
-                                        {pcChoice === 'rock' && (
-                                            <img
-                                                draggable='false'
-                                                src={rock}
-                                                alt='Player rock.'
-                                            />
-                                        )}
-                                        {pcChoice === 'paper' && (
-                                            <img
-                                                draggable='false'
-                                                src={paper}
-                                                alt='Player paper.'
-                                            />
-                                        )}
-                                        {pcChoice === 'scissors' && (
-                                            <img
-                                                draggable='false'
-                                                src={scissors}
-                                                alt='Player scissors.'
-                                            />
-                                        )}
-                                    </div>
+                                    <PlayerChoices />
+                                    <PcChoices />
                                 </div>
-                                {!gameOver && (
-                                    <div className='buttonContainer'>
-                                        <h2>{t('choice')}</h2>
-                                        <button
-                                            className='button button1'
-                                            onClick={playerRock}
-                                            disabled={gameOver}
-                                        >
-                                            {t('rock')}
-                                        </button>
-                                        <button
-                                            className='button button1'
-                                            onClick={playerScissors}
-                                            disabled={gameOver}
-                                        >
-                                            {t('scissors')}
-                                        </button>
-                                        <button
-                                            className='button button1'
-                                            onClick={playerPaper}
-                                            disabled={gameOver}
-                                        >
-                                            {t('paper')}
-                                        </button>
-                                    </div>
-                                )}
+                                <GameOver />
                             </>
                         </>
                     )}
-
-                    {/* )} */}
                     <div className='buttonContainer'>
                         {gameOver && nameIsSet && (
                             <>
