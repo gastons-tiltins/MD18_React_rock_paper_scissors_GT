@@ -1,4 +1,16 @@
 # Rock Paper Scissors game in 3 languages
-# Score saved to MySQL database trough API
+## Backend Node.js Express not included in this repository
 
-### `npm run dev`
+Preview:
+
+![alt text](https://kastad.nu/gitHubRepoImages/md18.png)
+
+Instructions:
+
+```
+npm i
+```
+
+```
+npm run dev
+```
